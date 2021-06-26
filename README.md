@@ -171,3 +171,25 @@ You can also use those variables to adapt your compose file to match an existing
 # Wanna help?
 
 Fork, improve and PR.
+
+########################################################################
+2021/6/26 Update!
+########################################################################
+## Installation
+
+Pull the image from the Docker repository.
+
+    docker pull tokimasa/docker-airflow
+
+## Build
+
+Build with tag tokimasa/docker-airflow
+
+    docker build --rm --no-cache -t puckel/docker-airflow .
+
+## Usage
+    docker-compose -f docker-compose-LocalExecutor.yml up -d
+    
+## DB for Input Data
+Need to create a MariaDB for model input data with a table 'demo' and laoding the 'wine_quality.csv' data first.
+Be careful, the host IP of DB may change so please check the ipconfig, for Windows, to make sure data_ingestion.py can connect to it.

@@ -191,12 +191,12 @@ Build with tag tokimasa/docker-airflow
     docker-compose -f docker-compose-LocalExecutor.yml up -d
     
 ## Note
-# DB for Input Data
+### DB for Input Data
 Need to create a MariaDB for model input data with a table 'demo' and laoding the 'wine_quality.csv' data first.
 Be careful, the host IP of DB may change so please check the ipconfig, for Windows, to make sure 'data_ingestion.py' can connect to it.
 
-# Model for drift detection
+### Model for drift detection
 Since this workflow is for task monitoring, it assumes that EDA and first training model are done. Therefore, there must be a initial model, 'model_v1.pickle' in my case, in dags/models folders for the 'data_drift.py' to consume it.
 
-# Inital State
+### Inital State
 The directories dags/data/ and dags/models/ are empyty but only 'model_v1.pickle' is in dags/models/ at first run.

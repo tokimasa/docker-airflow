@@ -197,7 +197,7 @@ Need to create a MariaDB for model input data with a table 'demo' and laoding th
 Be careful, the host IP of DB may change so please check the ipconfig, for Windows, to make sure 'data_ingestion.py' can connect to it.
 
 ### Model for drift detection
-Since this workflow is for task monitoring, it assumes that EDA and first training model are done. Therefore, there must be a initial model, 'model_v1.pickle' in my case, in dags/models folders for the 'data_drift.py' to consume it.
+Since this workflow is for task monitoring, it assumes that EDA and first training model are done. Therefore, there must be a initial model, 'model_v1.pickle' in my case, in dags/models/ directory for the 'data_drift.py' to consume it.
 
 ### Inital State
 The directories dags/data/ and dags/models/ are empyty but only 'model_v1.pickle' is in dags/models/ at first run.

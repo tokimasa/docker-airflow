@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.python_operator import BranchPythonOperator
@@ -14,7 +14,7 @@ from scripts.model_evaluation import evaluate
 default_args = {
     'owner': 'arocketman',
     'depends_on_past': False,
-    'start_date': days_ago(2),
+    'start_date': datetime(2021, 6, 26),
     'retries': 1,
     'retry_delay': timedelta(minutes=5)
 }
@@ -63,15 +63,11 @@ with dag:
         python_callable=evaluate
 	)
 
-	# model_deployment_task = PythonOperator(
-    #     task_id='model_deployment',
-    #     python_callable=deploy
-	# )
+
 	inference_task = PythonOperator(
         task_id='result_inference',
         python_callable=inference
 	)
 
-	# data_ingestion_task >> data_validation_task >> data_preparation_task >> model_training_task >> model_evaluation_task >> inference_task
 	data_ingestion_task >> data_validation_task >> data_preparation_task >> drift_detection_task >> [model_training_task, inference_task]
 	model_training_task >> model_evaluation_task

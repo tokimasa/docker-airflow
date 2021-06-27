@@ -186,7 +186,7 @@ Pull the image from the Docker repository.
 
 Build with tag tokimasa/docker-airflow
 
-    docker build --rm --no-cache -t puckel/docker-airflow .
+    docker build --rm --no-cache -t tokimasa/docker-airflow .
 
 ## Usage
     docker-compose -f docker-compose-LocalExecutor.yml up -d

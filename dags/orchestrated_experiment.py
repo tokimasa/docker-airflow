@@ -14,7 +14,7 @@ from scripts.model_evaluation import evaluate
 default_args = {
     'owner': 'arocketman',
     'depends_on_past': False,
-    'start_date': datetime(2021, 6, 26),
+    'start_date': days_ago(1),
     'retries': 1,
     'retry_delay': timedelta(minutes=5)
 }

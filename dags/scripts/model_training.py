@@ -10,8 +10,12 @@ import os
 
 def train():
     seed = 0
-    # df = pd.read_csv(r'..\data\prepared_train_data.csv')
-    df = pd.read_csv(r'./dags/data/prepared_train_data.csv')
+    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
+        work_dir = './dags'
+    else:
+        work_dir = '..'
+
+    df = pd.read_csv(work_dir+'/data/prepared_train_data.csv')
     y = df.pop('quality')
     X = df
 
@@ -38,20 +42,18 @@ def train():
                  'Ridge': (pipe2, ridge_param),
                  'regr': (pipe3, regr_param)
                  }
-    filepath = "./dags/models/"
+
     for model, (pipes, param) in pipe_dict.items():
         print(model, pipes)
-        if not os.path.isfile(filepath+'model_'+model+'_v1.pickle'):
+        if not os.path.isfile(work_dir+'/models/model_'+model+'_v1.pickle'):
             search = GridSearchCV(pipes, param, cv=10, n_jobs=-1, scoring='neg_mean_squared_error')
             search.fit(X, y)
             # Save model in pickle
-			# with open(r'..\models\model_'+model+'_v1.pickle', 'wb') as f:
-            with open(r'./dags/models/model_'+model+'_v1.pickle', 'wb') as f:
+            with open(work_dir+'/models/model_'+model+'_v1.pickle', 'wb') as f:
                 pickle.dump(search, f)
                 print('Model saved!')
 
-			# with open(r'..\models\param_'+model+'_v1.pickle', 'wb') as f:
-            with open(r'./dags/models/param_'+model+'_v1.pickle', 'wb') as f:
+            with open(work_dir+'/models/param_'+model+'_v1.pickle', 'wb') as f:
                 pickle.dump(search.best_estimator_, f)
                 print('Param. saved!')
 

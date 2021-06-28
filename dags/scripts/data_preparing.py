@@ -3,13 +3,16 @@ from sklearn.feature_selection import RFE
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 import numpy as np
-import pickle
+import os
 
 def feature_selection():
     seed = 0
+    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
+        work_dir = './dags'
+    else:
+        work_dir = '..'
     # Data access
-    # df = pd.read_csv(r'..\data\download_data.csv')
-    df = pd.read_csv(r'./dags/data/download_data.csv')
+    df = pd.read_csv(work_dir+'/data/download_data.csv')
     y = df.pop("quality")
     X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.3, random_state=seed)
 
@@ -37,10 +40,8 @@ def feature_selection():
     df_test_rfe = pd.DataFrame(test_rfe, columns=rfe_column)
 
     # Save selected data
-    # df_train_rfe.to_csv(r'..\data\prepared_train_data.csv', index=False)
-    # df_test_rfe.to_csv(r'..\data\prepared_test_data.csv', index=False)
-    df_train_rfe.to_csv(r'./dags/data/prepared_train_data.csv', index=False)
-    df_test_rfe.to_csv(r'./dags/data/prepared_test_data.csv', index=False)
+    df_train_rfe.to_csv(work_dir+'/data/prepared_train_data.csv', index=False)
+    df_test_rfe.to_csv(work_dir+'/data/prepared_test_data.csv', index=False)
     return rfe_column
 
 def prepare_data():

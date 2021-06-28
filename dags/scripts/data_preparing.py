@@ -40,8 +40,9 @@ def feature_selection():
     df_test_rfe = pd.DataFrame(test_rfe, columns=rfe_column)
 
     # Save selected data
-    df_train_rfe.to_csv(work_dir+'/data/prepared_train_data.csv', index=False)
-    df_test_rfe.to_csv(work_dir+'/data/prepared_test_data.csv', index=False)
+    if not os.path.isfile(work_dir + '/data/prepared_train_data.csv'):
+        df_train_rfe.to_csv(work_dir + '/data/prepared_train_data.csv', index=False)
+        df_test_rfe.to_csv(work_dir + '/data/prepared_test_data.csv', index=False)
     return rfe_column
 
 def prepare_data():

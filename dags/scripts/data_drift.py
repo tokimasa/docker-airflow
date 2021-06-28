@@ -1,10 +1,11 @@
-# from yellowbrick.regressor import ResidualsPlot, PredictionError
+from yellowbrick.regressor import ResidualsPlot, PredictionError
 from sklearn.metrics import r2_score
 import pandas as pd
 import pickle
 import os
+from scipy import stats
 
-def concept_drift():
+def load_data():
     if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
         work_dir = './dags'
     else:
@@ -16,18 +17,51 @@ def concept_drift():
     X_train = df_train
     y_test = df_test.pop('quality')
     X_test = df_test
+    return X_test, y_test, X_train, y_train
+
+def concept_drift(**kwargs):
+    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
+        work_dir = './dags'
+    else:
+        work_dir = '..'
 
     with open(work_dir+'/models/model_v1.pickle', 'rb') as f:
         model = pickle.load(f)
 
-    # visualizer = PredictionError(model)
-    # visualizer.score(X_test, y_test)
-    score = model.score(X_test, y_test)
+    ## Ploting
+    visualizer = ResidualsPlot(model)
+    visualizer.fit(kwargs['X_train'], kwargs['y_train'])
+    visualizer.score(kwargs['X_test'], kwargs['y_test'])
+    if not os.path.exists(work_dir+'/chart/'):
+        os.mkdir(work_dir+'/chart/')
+    visualizer.show(work_dir + '/chart/residual_plot.jpg')
 
-    # prediction error score is R2
+    ## Get testing data score on pre-trained model
+    score = model.score(kwargs['X_test'], kwargs['y_test'])
+
+    ## prediction error score is R2
     # flag = visualizer.score_ > 0.5
-    flag = score > 0.5
-    print(flag)
+    flag = score < 0.5
+    print('Concept Drift: ', flag, 'Score: ', score)
+    return flag
+
+def data_drift(**kwargs):
+    ## Try one of following tests:
+    ## Population Stability Index/ Kullback-Leibler(KL) divergence/ Jensen-Shannon(JS) divergence/ Kolmogorov-Smirnov(KS) test
+
+    feature_column = kwargs['X_test'].columns
+    ## Check distribution of each feature between test & train dataset
+    drift_flag = {}
+    for col in feature_column:
+        _, pvalue = stats.ks_2samp(kwargs['X_test'][col], kwargs['X_train'][col])
+        print(col, pvalue)
+        ## Reject the null hypothesis, two distributions are identical, if p-value < 0.05
+        drift_flag[col] = pvalue < 0.05
+
+    flag = False
+    for item in drift_flag.values():
+        flag = flag | item
+    print('Data Drift: ', flag, drift_flag.values())
     return flag
 
 def branch_fork(flag):
@@ -37,8 +71,12 @@ def branch_fork(flag):
     return 'result_inference'
 
 def drift_detection():
+    X_test, y_test, X_train, y_train = load_data()
+
     try:
-        flag = concept_drift()
+        concept_flag = concept_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
+        data_flag = data_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
+        flag = concept_flag | data_flag
     except:
         flag = True
     branch_name = branch_fork(flag)
@@ -46,4 +84,5 @@ def drift_detection():
     return branch_name
 
 if __name__=="__main__":
-	drift_detection()
+    X_test, y_test, X_train, y_train = load_data()
+    drift_detection()

@@ -82,7 +82,6 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
-COPY dags/models/model_v1.pickle ${AIRFLOW_USER_HOME}/dags/models/model_v1.pickle
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 

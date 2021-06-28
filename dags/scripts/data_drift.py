@@ -68,7 +68,7 @@ def branch_fork(flag):
     train_token = flag
     if train_token:
         return 'model_training'
-    return 'result_inference'
+    return 'inference'
 
 def drift_detection():
     X_test, y_test, X_train, y_train = load_data()

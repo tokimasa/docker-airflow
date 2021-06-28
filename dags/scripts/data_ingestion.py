@@ -9,7 +9,7 @@ def db_connect():
 		# Connect MySQL/MariaDB database
 		connection = mysql.connector.connect(
 			# host='localhost',
-			host='172.29.112.1',
+			host='172.21.192.1',
 			database='demo',
 			user='root',
 			password='0000')
@@ -43,8 +43,6 @@ def data_dumping(df, saving_type='csv'):
 		else:
 			## for the local PC working dir, "docker-airflow\dags\scripts\data_ingestion.py" => "docker-airflow\dags\data\download_data.csv"
 			df.to_csv(r'../data/download_data.csv', index=False)
-			# print(os.path.abspath(os.getcwd()))
-			# print(os.listdir(os.curdir))
 
 	elif saving_type == 'mysql':
 		## To Do ...

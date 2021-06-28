@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.python_operator import BranchPythonOperator
+from airflow.operators.dummy_operator import DummyOperator
 from airflow.utils.dates import days_ago
 from scripts.data_ingestion import ingest_data
 from scripts.data_preparing import prepare_data
@@ -64,10 +65,15 @@ with dag:
 	)
 
 
-	inference_task = PythonOperator(
-        task_id='result_inference',
+	inference_task_1 = PythonOperator(
+        task_id='inference',
         python_callable=inference
 	)
-
-	data_ingestion_task >> data_validation_task >> data_preparation_task >> drift_detection_task >> [model_training_task, inference_task]
-	model_training_task >> model_evaluation_task
+	
+	inference_task_2 = PythonOperator(
+        task_id='retrained_inference',
+        python_callable=inference
+	)
+		
+	data_ingestion_task >> data_validation_task >> data_preparation_task >> drift_detection_task >> [model_training_task, inference_task_1]
+	model_training_task >> model_evaluation_task >> inference_task_2

@@ -8,7 +8,7 @@ from sklearn import linear_model
 from sklearn.preprocessing import PolynomialFeatures
 import os
 
-def train():
+def train(**kwargs):
     seed = 0
     if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
         work_dir = './dags'
@@ -43,17 +43,24 @@ def train():
                  'regr': (pipe3, regr_param)
                  }
 
+    ## Only for Airflow to exchange data ##
+    model_version = kwargs['ti'].xcom_pull(key='model_version')
+    if model_version is None:
+        model_version = 1
+    print('model_version=', model_version)
+    #######################################
+
     for model, (pipes, param) in pipe_dict.items():
         print(model, pipes)
-        if not os.path.isfile(work_dir+'/models/model_'+model+'_v1.pickle'):
+        if not os.path.isfile(work_dir+'/models/model_'+model+'_v'+str(model_version)+'.pickle'):
             search = GridSearchCV(pipes, param, cv=10, n_jobs=-1, scoring='neg_mean_squared_error')
             search.fit(X, y)
             # Save model in pickle
-            with open(work_dir+'/models/model_'+model+'_v1.pickle', 'wb') as f:
+            with open(work_dir+'/models/model_'+model+'_v'+str(model_version)+'.pickle', 'wb') as f:
                 pickle.dump(search, f)
                 print('Model saved!')
 
-            with open(work_dir+'/models/param_'+model+'_v1.pickle', 'wb') as f:
+            with open(work_dir+'/models/param_'+model+'_v'+str(model_version)+'.pickle', 'wb') as f:
                 pickle.dump(search.best_estimator_, f)
                 print('Param. saved!')
 

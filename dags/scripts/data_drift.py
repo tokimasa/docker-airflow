@@ -40,7 +40,6 @@ def concept_drift(**kwargs):
     score = model.score(kwargs['X_test'], kwargs['y_test'])
 
     ## prediction error score is R2
-    # flag = visualizer.score_ > 0.5
     flag = score < 0.5
     print('Concept Drift: ', flag, 'Score: ', score)
     return flag
@@ -70,8 +69,28 @@ def branch_fork(flag):
         return 'model_training'
     return 'inference'
 
-def drift_detection():
+def batch_showname(path):
+    last_char = []
+    for fname in os.listdir(path):
+        # print(os.path.join(path, fname))
+        file_name = fname.split(".")[0]
+        last_char.append(int(list(file_name)[-1]))
+    print(last_char)
+    return max(last_char)
+
+def drift_detection(**kwargs):
+    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
+        work_dir = './dags'
+    else:
+        work_dir = '..'
+
     X_test, y_test, X_train, y_train = load_data()
+
+    ## Only for Airflow to exchange data ##
+    last_version = batch_showname(work_dir+'/models')
+    kwargs['ti'].xcom_push(key='model_version', value=last_version)
+    print(last_version)
+    #######################################
 
     try:
         concept_flag = concept_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
@@ -81,6 +100,16 @@ def drift_detection():
         flag = True
     branch_name = branch_fork(flag)
     print(branch_name)
+
+    ## Only for Airflow to exchange data ##
+    if flag:
+        if last_version is None:
+            last_version = 1
+        else:
+            last_version += 1
+        """Pushes an XCom without a specific target"""
+        kwargs['ti'].xcom_push(key='model_version', value=last_version)
+    #######################################
     return branch_name
 
 if __name__=="__main__":

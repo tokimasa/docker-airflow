@@ -9,7 +9,7 @@ def db_connect():
 		# Connect MySQL/MariaDB database
 		connection = mysql.connector.connect(
 			# host='localhost',
-			host='172.21.192.1',
+			host='172.23.240.1',
 			database='demo',
 			user='root',
 			password='0000')

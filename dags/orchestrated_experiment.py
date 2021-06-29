@@ -25,17 +25,16 @@ dag = DAG(
     'orchestrated_experiment',
     default_args=default_args,
     description='A ML orchestrated experiment',
-    schedule_interval=timedelta(minutes=30),
+    schedule_interval=timedelta(days=1),
 )
-
 
 def validate_data():
 	print('show data quality...')
 
-
 with dag:
 	drift_detection_task = BranchPythonOperator(
         task_id='drift_detection',
+        provide_context=True,
         python_callable=drift_detection
 	)
 
@@ -56,24 +55,27 @@ with dag:
 
 	model_training_task = PythonOperator(
         task_id='model_training',
+        provide_context=True,
         python_callable=train
 	)
 
 	model_evaluation_task = PythonOperator(
         task_id='model_evaluation',
+        provide_context=True,
         python_callable=evaluate
 	)
 
-
 	inference_task_1 = PythonOperator(
         task_id='inference',
+        provide_context=True,
         python_callable=inference
 	)
-	
+
 	inference_task_2 = PythonOperator(
         task_id='retrained_inference',
+        provide_context=True,
         python_callable=inference
 	)
-		
+
 	data_ingestion_task >> data_validation_task >> data_preparation_task >> drift_detection_task >> [model_training_task, inference_task_1]
 	model_training_task >> model_evaluation_task >> inference_task_2

@@ -12,8 +12,15 @@ def train(**kwargs):
     seed = 0
     if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
         work_dir = './dags'
+        ## Only for Airflow to exchange data ##
+        model_version = kwargs['ti'].xcom_pull(key='model_version')
+        if model_version is None:
+            model_version = 1
+        print('model_version=', model_version)
+        #######################################
     else:
         work_dir = '..'
+        model_version = 1
 
     df = pd.read_csv(work_dir+'/data/prepared_train_data.csv')
     y = df.pop('quality')
@@ -42,13 +49,6 @@ def train(**kwargs):
                  'Ridge': (pipe2, ridge_param),
                  'regr': (pipe3, regr_param)
                  }
-
-    ## Only for Airflow to exchange data ##
-    model_version = kwargs['ti'].xcom_pull(key='model_version')
-    if model_version is None:
-        model_version = 1
-    print('model_version=', model_version)
-    #######################################
 
     for model, (pipes, param) in pipe_dict.items():
         print(model, pipes)

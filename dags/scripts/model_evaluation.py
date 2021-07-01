@@ -32,11 +32,11 @@ def evaluate(**kwargs):
     print(score_dict)
     if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
         ## Only for Airflow to exchange data ##
-        kwargs['ti'].xcom_push(key='best_model_score', value=max(score_dict.values()))
+        kwargs['ti'].xcom_push(key='best_model_score', value=min(score_dict.values()))
         #######################################
 
     # Find best model
-    best_model = max(score_dict, key=score_dict.get)
+    best_model = min(score_dict, key=score_dict.get)
     with open(work_dir+'/models/model_v'+str(model_version)+'.pickle', 'wb') as f:
         pickle.dump(best_model, f)
 

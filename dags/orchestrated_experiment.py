@@ -3,6 +3,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.python_operator import BranchPythonOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.bash_operator import BashOperator
 from airflow.utils.dates import days_ago
 from scripts.data_ingestion import ingest_data
 from scripts.data_preparing import prepare_data
@@ -78,5 +79,13 @@ with dag:
         python_callable=inference
 	)
 
+	git_push_task = BashOperator(
+        task_id='git_push_task',
+        # "scripts" folder is under "/usr/local/airflow/dags"
+        bash_command="scripts/git_push.sh",
+        trigger_rule='one_success',
+        )
+
 	data_ingestion_task >> data_validation_task >> data_preparation_task >> drift_detection_task >> [model_training_task, inference_task_1]
 	model_training_task >> model_evaluation_task >> inference_task_2
+	[inference_task_1, inference_task_2] >> git_push_task

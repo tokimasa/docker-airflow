@@ -72,6 +72,7 @@ RUN set -ex \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
+	&& apt-get install -yqq git \
     && rm -rf \
         /var/lib/apt/lists/* \
         /tmp/* \

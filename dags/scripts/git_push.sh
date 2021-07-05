@@ -1,5 +1,5 @@
 echo $PWD
-cd /usr/local/airflow/dags/models
+cd /usr/local/airflow/dags
 echo $PWD
 apt-get moo
 git config --global user.name "tokimasa"

@@ -1,29 +1,13 @@
 from yellowbrick.regressor import ResidualsPlot, PredictionError
 from sklearn.metrics import r2_score
-import pandas as pd
 import pickle
 import os
 from scipy import stats
-
-def load_data():
-    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
-        work_dir = './dags'
-    else:
-        work_dir = '..'
-
-    df_train = pd.read_csv(work_dir+'/data/prepared_train_data.csv')
-    df_test = pd.read_csv(work_dir+'/data/prepared_test_data.csv')
-    y_train = df_train.pop('quality')
-    X_train = df_train
-    y_test = df_test.pop('quality')
-    X_test = df_test
-    return X_test, y_test, X_train, y_train
+from scripts.util import LoadData
 
 def concept_drift(**kwargs):
-    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
-        work_dir = './dags'
-    else:
-        work_dir = '..'
+    ld = LoadData()
+    work_dir = ld.check_dir()
 
     with open(work_dir+'/models/model_v1.pickle', 'rb') as f:
         model = pickle.load(f)
@@ -81,7 +65,9 @@ def batch_showname(path):
     return max(last_char)
 
 def drift_detection(**kwargs):
-    X_test, y_test, X_train, y_train = load_data()
+    ld = LoadData()
+    work_dir = ld.check_dir()
+    X_train, X_test, y_train, y_test = ld.get_data(datatype='both')
     try:
         concept_flag = concept_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
         data_flag = data_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
@@ -91,24 +77,20 @@ def drift_detection(**kwargs):
     branch_name = branch_fork(flag)
     print(branch_name)
 
-    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
-        work_dir = './dags'
-        ## Only for Airflow to exchange data ##
-        # Update the last version of experiment model if drift flag is True and push it
-        last_version = batch_showname(work_dir + '/models')
-        if flag:
-            if last_version is None:
-                last_version = 1
-            else:
-                last_version += 1
-        kwargs['ti'].xcom_push(key='model_version', value=last_version)
-        print(last_version)
-        #######################################
-    else:
-        work_dir = '..'
-
+    ## Only for Airflow to exchange data ##
+    # Update the last version of experiment model if drift flag is True and push it
+    last_version = batch_showname(work_dir + '/models')
+    if flag:
+        if last_version is None:
+            last_version = 1
+        else:
+            last_version += 1
+    kwargs['ti'].xcom_push(key='model_version', value=last_version)
+    #######################################
     return branch_name
 
 if __name__=="__main__":
-    X_test, y_test, X_train, y_train = load_data()
+    ld = LoadData()
+    work_dir = ld.check_dir()
+    ld.get_data(datatype='both')
     drift_detection()

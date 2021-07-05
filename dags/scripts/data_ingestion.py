@@ -3,7 +3,6 @@ from mysql.connector import Error
 import pandas as pd
 import os
 
-
 def db_connect():
 	try:
 		# Connect MySQL/MariaDB database
@@ -41,8 +40,6 @@ def data_dumping(df, saving_type='csv'):
 			"""
 			df.to_csv(r'./dags/data/download_data.csv', index=False)
 			print('Data saved!')
-			# print(os.path.abspath(os.getcwd()))
-			# print(os.listdir(os.curdir))
 		else:
 			"""
 			For the local PC working dir

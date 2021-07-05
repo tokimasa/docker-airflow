@@ -1,20 +1,15 @@
 import pandas as pd
 from sklearn.feature_selection import RFE
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 import numpy as np
 import os
+from scripts.util import LoadData
 
 def feature_selection():
     seed = 0
-    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
-        work_dir = './dags'
-    else:
-        work_dir = '..'
-    # Data access
-    df = pd.read_csv(work_dir+'/data/download_data.csv')
-    y = df.pop("quality")
-    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.3, random_state=seed)
+    ld = LoadData()
+    work_dir = ld.check_dir()
+    X_train, X_test, y_train, y_test = ld.split_data()
 
     # Feature importance by random forest & feature selection for recursive feature elimination
     regr = RandomForestRegressor(max_depth=6, random_state=seed)

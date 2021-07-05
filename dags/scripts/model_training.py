@@ -1,5 +1,4 @@
 from sklearn.ensemble import RandomForestRegressor
-import pandas as pd
 import pickle
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -7,24 +6,18 @@ from sklearn.model_selection import GridSearchCV
 from sklearn import linear_model
 from sklearn.preprocessing import PolynomialFeatures
 import os
+from scripts.util import LoadData
 
 def train(**kwargs):
     seed = 0
-    if os.path.abspath(os.getcwd()) == "/usr/local/airflow":
-        work_dir = './dags'
-        ## Only for Airflow to exchange data ##
-        model_version = kwargs['ti'].xcom_pull(key='model_version')
-        if model_version is None:
-            model_version = 1
-        print('model_version=', model_version)
-        #######################################
-    else:
-        work_dir = '..'
+    ld = LoadData()
+    work_dir = ld.check_dir()
+    X, y = ld.get_data(datatype='train')
+    
+    ## Only for Airflow to exchange data ##
+    model_version = kwargs['ti'].xcom_pull(key='model_version')
+    if model_version is None:
         model_version = 1
-
-    df = pd.read_csv(work_dir+'/data/prepared_train_data.csv')
-    y = df.pop('quality')
-    X = df
 
     pipe1 = Pipeline([('scaler', StandardScaler()),
                       ('poly', PolynomialFeatures()),
@@ -65,4 +58,4 @@ def train(**kwargs):
                 print('Param. saved!')
 
 if __name__=="__main__":
-	train()
+    train()

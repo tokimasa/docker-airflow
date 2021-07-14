@@ -35,8 +35,8 @@ dag = DAG(
 def validate_data():
 	print('show data quality...')
 
-def get_plot():
-    return "http://airbnb.io/img/projects/airflow3.png"
+def get_chart():
+    return "https://gitlab-k8s.wzs.wistron.com.cn/10809115/docker-airflow-main/-/blob/master/dags/chart/residual_plot.jpg"
     # return 'Hello, World!'
 
 
@@ -97,7 +97,7 @@ with dag:
         task_id='post_performance',
         http_conn_id='slack_connection',
         webhook_token=BaseHook.get_connection('slack_connection').password,
-        message=get_plot(),
+        message=get_chart(),
         channel='#feed'
         )
 

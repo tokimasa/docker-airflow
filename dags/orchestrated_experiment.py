@@ -14,6 +14,29 @@ from scripts.model_training import train
 from scripts.model_inference import inference
 from scripts.model_evaluation import evaluate
 
+def task_fail_slack_alert(context):
+    slack_webhook_token = BaseHook.get_connection(SLACK_CONN_ID).password
+    slack_msg = """
+            :red_circle: Task Failed. 
+            *Task*: {task}  
+            *Dag*: {dag} 
+            *Execution Time*: {exec_date}  
+            *Log Url*: {log_url} 
+            """.format(
+            task=context.get('task_instance').task_id,
+            dag=context.get('task_instance').dag_id,
+            ti=context.get('task_instance'),
+            exec_date=context.get('execution_date'),
+            log_url=context.get('task_instance').log_url,
+        )
+    failed_alert = SlackWebhookOperator(
+        task_id='slack_test',
+        http_conn_id=SLACK_CONN_ID,
+        webhook_token=slack_webhook_token,
+        message=slack_msg,
+        username='airflow')
+    return failed_alert.execute(context=context)
+
 # Define some arguments for our DAG
 default_args = {
     'owner': 'arocketman',
@@ -21,7 +44,8 @@ default_args = {
     'start_date': days_ago(1),
     'catchup': False,
     'retries': 1,
-    'retry_delay': timedelta(minutes=5)
+    'retry_delay': timedelta(minutes=5),
+    'on_failure_callback': task_fail_slack_alert
 }
 
 # Instantiate our DAG
@@ -32,13 +56,14 @@ dag = DAG(
     schedule_interval=timedelta(days=1),
 )
 
+SLACK_CONN_ID = 'slack_connection'
+slack_webhook_token = BaseHook.get_connection(SLACK_CONN_ID).password
+
 def validate_data():
 	print('show data quality...')
 
 def get_chart():
     return "https://gitlab-k8s.wzs.wistron.com.cn/10809115/docker-airflow-main/-/blob/master/dags/chart/residual_plot.jpg"
-    # return 'Hello, World!'
-
 
 with dag:
         drift_detection_task = BranchPythonOperator(
@@ -95,8 +120,8 @@ with dag:
 
         post_performance_task = SlackWebhookOperator(
         task_id='post_performance',
-        http_conn_id='slack_connection',
-        webhook_token=BaseHook.get_connection('slack_connection').password,
+        http_conn_id=SLACK_CONN_ID,
+        webhook_token=slack_webhook_token,
         message=get_chart(),
         channel='#feed'
         )

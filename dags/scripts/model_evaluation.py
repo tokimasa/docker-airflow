@@ -25,9 +25,14 @@ def evaluate(**kwargs):
     best_model = min(score_dict, key=score_dict.get)
     ## Only for Airflow to exchange data ##
     kwargs['ti'].xcom_push(key='best_model_score', value=min(score_dict.values()))
-    
-    with open(work_dir+'/models/model_v'+str(model_version)+'.pickle', 'wb') as f:
-        pickle.dump(best_model, f)
+
+    old_model_score = kwargs['ti'].xcom_pull(key='old_model_score')
+    new_model_score = min(score_dict.values())
+    if new_model_score > old_model_score:
+        with open(work_dir+'/models/model_v'+str(model_version)+'.pickle', 'wb') as f:
+            pickle.dump(best_model, f)
+    else:
+        print('No better result!')
 
 if __name__=="__main__":
     evaluate()

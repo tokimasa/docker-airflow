@@ -27,7 +27,7 @@ def concept_drift(**kwargs):
     # Flag for model performance being worse
     flag = score < 0.5
     print('Concept Drift: ', flag, 'Score: ', score)
-    return flag
+    return flag, score
 
 def data_drift(**kwargs):
     feature_column = kwargs['X_test'].columns
@@ -68,12 +68,17 @@ def drift_detection(**kwargs):
     ld = LoadData()
     work_dir = ld.check_dir()
     X_train, X_test, y_train, y_test = ld.get_data(datatype='both')
-    try:
-        concept_flag = concept_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
-        data_flag = data_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
-        flag = concept_flag | data_flag
-    except:
-        flag = True
+    concept_flag, score = concept_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
+    data_flag = data_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
+    flag = concept_flag | data_flag
+    kwargs['ti'].xcom_push(key='old_model_score', value=score)
+    # try:
+    #     concept_flag, score = concept_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
+    #     data_flag = data_drift(X_test=X_test, y_test=y_test, X_train=X_train, y_train=y_train)
+    #     flag = concept_flag | data_flag
+    #     kwargs['ti'].xcom_push(key='old_model_score', value=score)
+    # except:
+    #     flag = True
     branch_name = branch_fork(flag)
     print(branch_name)
 

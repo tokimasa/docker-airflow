@@ -6,7 +6,7 @@ class LoadData():
     def __init__(self):
         self.airflow_entry = "/usr/local/airflow"
         self.airflow_wd = './dags'
-        self.local_wd = '..'
+        self.local_wd = './dags'
         self.ingested_data = '/data/download_data.csv'
         self.prepared_train = '/data/prepared_train_data.csv'
         self.prepared_test = '/data/prepared_test_data.csv'
